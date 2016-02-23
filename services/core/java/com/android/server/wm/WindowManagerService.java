@@ -11962,6 +11962,7 @@ public class WindowManagerService extends IWindowManager.Stub
 
         @Override
         public void waitForAllWindowsDrawn(Runnable callback, long timeout) {
+            boolean allWindowsDrawn = false;
             synchronized (mWindowMap) {
                 mWaitingForDrawnCallback = callback;
                 final WindowList windows = getDefaultWindowListLocked();
@@ -11982,13 +11983,16 @@ public class WindowManagerService extends IWindowManager.Stub
                     }
                 }
                 requestTraversalLocked();
+                mH.removeMessages(H.WAITING_FOR_DRAWN_TIMEOUT);
+                if (mWaitingForDrawn.isEmpty()) {
+                    allWindowsDrawn = true;
+                } else {
+                    mH.sendEmptyMessageDelayed(H.WAITING_FOR_DRAWN_TIMEOUT, timeout);
+                    checkDrawnWindowsLocked();
+                }
             }
-            mH.removeMessages(H.WAITING_FOR_DRAWN_TIMEOUT);
-            if (mWaitingForDrawn.isEmpty()) {
+            if (allWindowsDrawn) {
                 callback.run();
-            } else {
-                mH.sendEmptyMessageDelayed(H.WAITING_FOR_DRAWN_TIMEOUT, timeout);
-                checkDrawnWindowsLocked();
             }
         }
 
