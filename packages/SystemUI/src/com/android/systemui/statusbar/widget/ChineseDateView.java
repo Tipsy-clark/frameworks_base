@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008 The Android Open Source Project
+ * Copyright (C) 2015 The SudaMod Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,34 +14,22 @@
  * limitations under the License.
  */
 
-package com.android.systemui.statusbar.policy;
+package com.android.systemui.statusbar.widget;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.res.TypedArray;
-import android.text.format.DateFormat;
 import android.util.AttributeSet;
 import android.widget.TextView;
-
-import com.android.systemui.R;
-
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Locale;
 import java.util.Calendar;
 import android.suda.lunar.Lunar;
 import android.suda.utils.SudaUtils;
 
-public class DateView extends TextView {
-    private static final String TAG = "DateView";
-
-    private final Date mCurrentTime = new Date();
-
-    private SimpleDateFormat mDateFormat;
+public class ChineseDateView extends TextView {
+    private static final String TAG = "ChineseDateView";
     private String mLastText;
-    private String mDatePattern;
+
 
     private BroadcastReceiver mIntentReceiver = new BroadcastReceiver() {
         @Override
@@ -51,31 +39,16 @@ public class DateView extends TextView {
                     || Intent.ACTION_TIME_CHANGED.equals(action)
                     || Intent.ACTION_TIMEZONE_CHANGED.equals(action)
                     || Intent.ACTION_LOCALE_CHANGED.equals(action)) {
-                if (Intent.ACTION_LOCALE_CHANGED.equals(action)
-                        || Intent.ACTION_TIMEZONE_CHANGED.equals(action)) {
-                    // need to get a fresh date format
-                    mDateFormat = null;
-                }
-                updateClock();
+
+                updateChineseDate();
+
             }
         }
     };
 
-    public DateView(Context context, AttributeSet attrs) {
+    public ChineseDateView(Context context, AttributeSet attrs) {
         super(context, attrs);
-        TypedArray a = context.getTheme().obtainStyledAttributes(
-                attrs,
-                R.styleable.DateView,
-                0, 0);
 
-        try {
-            mDatePattern = a.getString(R.styleable.DateView_datePattern);
-        } finally {
-            a.recycle();
-        }
-        if (mDatePattern == null) {
-            mDatePattern = getContext().getString(R.string.system_ui_date_pattern);
-        }
     }
 
     @Override
@@ -89,18 +62,17 @@ public class DateView extends TextView {
         filter.addAction(Intent.ACTION_LOCALE_CHANGED);
         getContext().registerReceiver(mIntentReceiver, filter, null, null);
 
-        updateClock();
+        updateChineseDate();
     }
 
     @Override
     protected void onDetachedFromWindow() {
         super.onDetachedFromWindow();
-
-        mDateFormat = null; // reload the locale next time
         getContext().unregisterReceiver(mIntentReceiver);
+
     }
 
-    protected void updateClock() {
+    protected void updateChineseDate() {
         Calendar cal = Calendar.getInstance();
         Lunar lunar = new Lunar(cal);
 
@@ -109,30 +81,13 @@ public class DateView extends TextView {
         int DATE = cal.get(Calendar.DATE); 
         cal.set(YEAR,MONTH,DATE);
 
-        final String text_lunar = SudaUtils.isSupportLanguage(true) ? lunar.toString():"";
+        final String text = SudaUtils.isSupportLanguage(true) ? lunar.toString():"";
 
-        if (mDateFormat == null) {
-            final Locale l = Locale.getDefault();
-            final String fmt = DateFormat.getBestDateTimePattern(l, mDatePattern);
-            mDateFormat = new SimpleDateFormat(fmt, l);
-        }
-
-        mCurrentTime.setTime(System.currentTimeMillis());
-
-        final String text = getDateFormat() + " " + text_lunar;
+       
         if (!text.equals(mLastText)) {
             setText(text);
             mLastText = text;
         }
-    }
 
-    private String getDateFormat() {
-        if (getContext().getResources().getBoolean(
-                com.android.internal.R.bool.config_dateformat)
-                ) {
-            return DateFormat.getDateFormat(getContext()).format(mCurrentTime);
-        } else {
-            return mDateFormat.format(mCurrentTime);
-        }
     }
 }
