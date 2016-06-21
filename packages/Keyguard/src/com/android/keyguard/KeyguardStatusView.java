@@ -75,6 +75,7 @@ public class KeyguardStatusView extends GridLayout implements
     private boolean mShowWeather;
     private int mIconNameValue = 0;
     private WeatherController mWeatherController;
+    private TextView mChineseDate;
 
     //On the first boot, keygard will start to receiver TIME_TICK intent.
     //And onScreenTurnedOff will not get called if power off when keyguard is not started.
@@ -102,6 +103,7 @@ public class KeyguardStatusView extends GridLayout implements
         @Override
         public void onStartedWakingUp() {
             setEnableMarquee(true);
+	    mChineseDate.setVisibility(View.VISIBLE);
             mEnableRefresh = true;
             refresh();
         }
@@ -109,6 +111,7 @@ public class KeyguardStatusView extends GridLayout implements
         @Override
         public void onFinishedGoingToSleep(int why) {
             setEnableMarquee(false);
+	    mChineseDate.setVisibility(View.VISIBLE);
             mEnableRefresh = false;
         }
 
@@ -157,6 +160,7 @@ public class KeyguardStatusView extends GridLayout implements
         mWeatherHumidity = (TextView) findViewById(R.id.humidity);
         mWeatherConditionText = (TextView) findViewById(R.id.condition);
         mWeatherTimestamp = (TextView) findViewById(R.id.timestamp);
+        mChineseDate = (TextView) findViewById(R.id.date_chinese);
 
         boolean shouldMarquee = KeyguardUpdateMonitor.getInstance(mContext).isDeviceInteractive();
         setEnableMarquee(shouldMarquee);
