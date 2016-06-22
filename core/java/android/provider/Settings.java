@@ -2563,6 +2563,11 @@ public final class Settings {
         public static final String BATTERY_LOW_NOTIFICATION = "battery_low_notification";
 
         /**
+         * Locale for secondary overlay on dialer for t9 search input
+         */
+        public static final String T9_SEARCH_INPUT_LOCALE = "t9_search_input_locale";
+
+        /**
          * The keyboard brightness to be used while the screen is on.
          * Valid value range is between 0 and {@link PowerManager#getMaximumKeyboardBrightness()}
          * @hide
